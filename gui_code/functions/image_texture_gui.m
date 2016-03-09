@@ -34,9 +34,12 @@ function image_texture_gui(image,dict,nr_labels,LABELING)
 %   - when zooming, make sure mouse overlay circle not displayed (frozen)
 %   - option for changing OPACITY
 
-%%%%%%%%%% DEFAULTS %%%%%%%%%%
+%% %%%%%%%% DEFAULTS %%%%%%%%%%
 if nargin<1 % default example image
     image = imread('bag.png');
+    image = imread('texture.jpg');
+image = image(:,:,1);
+
     dict.method = 'euclidean';
     dict.patch_size = 15;
     dict.branching_factor = 2;
@@ -65,7 +68,7 @@ if nargin<4 || isempty(LABELING) % default, unlabeled initial labeling
     LABELING = zeros(r*c,nr_labels);
 end
 
-%%%%%%%%%% PROBABILITY COMPUTING METHODS %%%%%%%%%%
+%% %%%%%%%% PROBABILITY COMPUTING METHODS %%%%%%%%%%
 % to add a new method, add a function to the method_options list
 method_options = {...
     @(labeling)distributed(labeling),...
@@ -79,7 +82,7 @@ method_options = {...
     @(labeling)diffusion_two_step(labeling),...
     };
 
-%%%%%%%%%% SETTINGS %%%%%%%%%%
+%% %%%%%%%% SETTINGS %%%%%%%%%%
 
 % method options
 METHOD_INDEX = 1; % initial method is the first on the list
@@ -122,12 +125,12 @@ COLOR_WEIGHT = color_weight_options(COLOR_WEIGHT_INDEX);
 
 % live update option
 live_update_options = {'off','on'};
-LIVE_UPDATE = true; % initially on
+LIVE_UPDATE = false; % initially on
 
 % other settings
 nr_circle_pts = 16; % number of points defining a circular pencil
 
-%%%%%%%%%% INITIALIZATION AND LAYOUT %%%%%%%%%%
+%% %%%%%%%% INITIALIZATION AND LAYOUT %%%%%%%%%%
 
 [image,image_rgb,image_gray] = normalize_image(image); % impose 0-to-1 rgb
 LABELING_OVERLAY = image_rgb; % image overlaid labeling
@@ -215,7 +218,7 @@ set(zoom_handle,'ActionPostCallback',@adjust_limits,...
 set(pan_handle,'ActionPostCallback',@adjust_limits,...
     'ActionPreCallback',@force_keep_key_press);
 
-%%%%%%%%%% TEXTURE REPRESENTATION %%%%%%%%%%
+%% %%%%%%%% TEXTURE REPRESENTATION %%%%%%%%%%
 % initiolization: building a texture representation of the image
 % parsing dictopt input: either dictionary_options, dictionary or mappings
 if isfield(dict,'patch_size') % dictionary options given
@@ -247,9 +250,14 @@ compute_overlays
 set(fig,'Pointer','arrow','WindowButtonDownFcn',@start_draw,...
     'WindowButtonMotionFcn',@pointer_motion);
 XO = []; % current drawing point
+
+
 uiwait % waits with assigning output until a figure is closed
 
-%%%%%%%%%% CALLBACK FUNCTIONS %%%%%%%%%%
+
+
+
+%% %%%%%%%% CALLBACK FUNCTIONS %%%%%%%%%%
     function key_press(~,object)
         % keyboard commands
         key = object.Key;
@@ -397,7 +405,7 @@ uiwait % waits with assigning output until a figure is closed
             else % fill
                 M = fill(x);
             end
-            update(M);
+             update(M);
         end
     end
 
@@ -432,7 +440,7 @@ uiwait % waits with assigning output until a figure is closed
         end
     end
 
-%%%%%%%%%% HELPING FUNCTIONS %%%%%%%%%%
+%% %%%%%%%% HELPING FUNCTIONS %%%%%%%%%%
 
     function [L,S] = membership2indexed
         % computes labeling and segmentation as indexed r-by-c images
@@ -528,7 +536,7 @@ uiwait % waits with assigning output until a figure is closed
             labcol(LABEL) = 1;
         end
         LABELING(M(:),:) = repmat(labcol,[sum(M(:)),1]);
-        if LIVE_UPDATE
+        if LIVE_UPDATE 
             PROBABILITY = METHOD(LABELING); % PROBABILITY computed
             labeling_overwrite
             regularize
@@ -541,6 +549,7 @@ uiwait % waits with assigning output until a figure is closed
     end
 
     function compute_overlays(compute_both)
+        
         if nargin<1
             compute_both = true; % default computes overlay for both images
         end
@@ -683,7 +692,7 @@ uiwait % waits with assigning output until a figure is closed
         linkaxes([labeling_axes,segmentation_axes],flag)
     end
 
-%%%%%%%%%% LABELINGS TO PROBABILITIES METHODS %%%%%%%%%%
+%% %%%%%%%% LABELINGS TO PROBABILITIES METHODS %%%%%%%%%%
 
     function probabilities = distributed(labelings)
         % unlabeled pixels have label weights DISTRIBUTED equally
